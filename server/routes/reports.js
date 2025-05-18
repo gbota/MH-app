@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getCalendar } = require('../utils/calendar');
+const { pool } = require('../db/db');
 
 // Test route
 router.get('/test', (req, res) => res.json({ ok: true }));
@@ -105,6 +106,37 @@ router.get('/rehearsals', async (req, res) => {
     // Send more detailed error information
     res.status(500).json({ 
       error: 'Failed to fetch rehearsals report', 
+      details: error.message,
+      stack: error.stack
+    });
+  }
+});
+
+router.get('/students', async (req, res) => {
+  try {
+    const { rehearsalId } = req.query;
+    console.log('Students report request:', { rehearsalId });
+    
+    const students = await pool.query(`
+      SELECT 
+        s.id,
+        s.first_name,
+        s.last_name,
+        s.grade
+      FROM students s
+      JOIN student_rehearsals sr ON s.id = sr.student_id
+      WHERE sr.rehearsal_id = $1
+      ORDER BY s.last_name, s.first_name
+    `, [rehearsalId]);
+    
+    console.log(`Found ${students.rows.length} students`);
+    
+    res.json({ students: students.rows });
+  } catch (error) {
+    console.error('Error in students report:', error);
+    // Send more detailed error information
+    res.status(500).json({ 
+      error: 'Failed to fetch students report', 
       details: error.message,
       stack: error.stack
     });
