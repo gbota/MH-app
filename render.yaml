@@ -22,10 +22,9 @@ services:
 
   - type: web
     name: music-school-frontend
-    env: node
+    env: static
     buildCommand: cd client && npm install && npm run build
-    startCommand: cd client && serve -s build
+    staticPublishPath: ./client/build
     envVars:
       - key: REACT_APP_API_URL
-        value: https://music-hub.onrender.com
-    staticPublishPath: ./client/build 
+        value: https://music-hub.onrender.com 
