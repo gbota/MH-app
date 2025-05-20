@@ -23,8 +23,8 @@ app.use(express.json());
 // app.use('/api/students', require('./routes/students'));
 // app.use('/api/bands', require('./routes/bands'));
 // app.use('/api/payments', require('./routes/payments'));
-app.use('/api/reports', require('./routes/reports'));
-app.use('/api/calendar', require('./routes/calendar'));
+app.use('/api/reports', require('./server/routes/reports'));
+app.use('/api/calendar', require('./server/routes/calendar'));
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
