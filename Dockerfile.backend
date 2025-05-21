@@ -29,7 +29,7 @@ USER appuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:5050/api/health || exit 1
+  CMD node -e "require('http').get('http://localhost:5050/api/health', (res) => { if (res.statusCode !== 200) throw new Error('Not healthy') })" || exit 1
 
 # Expose the app port
 EXPOSE 5050

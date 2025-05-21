@@ -1,5 +1,4 @@
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 // @desc    Register a new user
@@ -8,28 +7,13 @@ const User = require('../models/User');
 const registerUser = async (req, res) => {
   const { name, email, password, isAdmin } = req.body;
 
-  // Simple validation
-  if (!name || !email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide all required fields',
-      missing: {
-        name: !name,
-        email: !email,
-        password: !password
-      }
-    });
-  }
-
   try {
     // Check if user exists
     const userExists = await User.findOne({ email });
-    
+
     if (userExists) {
-      return res.status(400).json({
-        success: false,
-        message: 'User already exists'
-      });
+      res.status(400);
+      throw new Error('User already exists');
     }
 
     // Create user
@@ -37,97 +21,54 @@ const registerUser = async (req, res) => {
       name,
       email,
       password,
-      isAdmin: isAdmin || false
+      isAdmin: isAdmin || false,
     });
 
     if (user) {
-      const token = generateToken(res, user._id);
-      
+      generateToken(res, user._id);
+
       res.status(201).json({
-        success: true,
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin
-        },
-        token
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
       });
     } else {
-      res.status(400).json({
-        success: false,
-        message: 'Invalid user data'
-      });
+      res.status(400);
+      throw new Error('Invalid user data');
     }
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    res.status(400).json({
+      message: error.message,
     });
   }
 };
 
-// @desc    Authenticate user & get token
+// @desc    Auth user & get token
 // @route   POST /api/auth/login
 // @access  Public
 const authUser = async (req, res) => {
   const { email, password } = req.body;
 
-  // Simple validation
-  if (!email || !password) {
-    return res.status(400).json({
-      success: false,
-      message: 'Please provide both email and password',
-      received: { email: !!email, password: !!password }
-    });
-  }
-
   try {
-    // Find user by email and explicitly include password
-    const user = await User.findOne({ email }).select('+password').lean();
+    const user = await User.findOne({ email });
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials',
-        userFound: false
-      });
-    }
+    if (user && (await user.matchPassword(password))) {
+      generateToken(res, user._id);
 
-    // Direct bcrypt comparison
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid credentials',
-        authenticated: false
-      });
-    }
-
-    const token = generateToken(res, user._id);
-    
-    // Remove password from output
-    user.password = undefined;
-
-    res.status(200).json({
-      success: true,
-      token,
-      user: {
+      res.json({
         _id: user._id,
         name: user.name,
         email: user.email,
-        isAdmin: user.isAdmin || false
-      }
-    });
+        isAdmin: user.isAdmin,
+      });
+    } else {
+      res.status(401);
+      throw new Error('Invalid email or password');
+    }
   } catch (error) {
-    console.error('Auth error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    res.status(401).json({
+      message: error.message,
     });
   }
 };
@@ -137,26 +78,22 @@ const authUser = async (req, res) => {
 // @access  Private
 const getUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
       });
+    } else {
+      res.status(404);
+      throw new Error('User not found');
     }
-    
-    res.status(200).json({
-      success: true,
-      user
-    });
-    
   } catch (error) {
-    console.error('Profile error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    res.status(404).json({
+      message: error.message,
     });
   }
 };
@@ -166,40 +103,31 @@ const getUserProfile = async (req, res) => {
 // @access  Private
 const updateUserProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-    
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    
-    if (req.body.password) {
-      user.password = req.body.password;
-    }
-    
-    const updatedUser = await user.save();
-    
-    res.status(200).json({
-      success: true,
-      user: {
+    const user = await User.findById(req.user._id);
+
+    if (user) {
+      user.name = req.body.name || user.name;
+      user.email = req.body.email || user.email;
+
+      if (req.body.password) {
+        user.password = req.body.password;
+      }
+
+      const updatedUser = await user.save();
+
+      res.json({
         _id: updatedUser._id,
         name: updatedUser.name,
         email: updatedUser.email,
-        isAdmin: updatedUser.isAdmin || false
-      }
-    });
-    
+        isAdmin: updatedUser.isAdmin,
+      });
+    } else {
+      res.status(404);
+      throw new Error('User not found');
+    }
   } catch (error) {
-    console.error('Update profile error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Server error',
-      error: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
+    res.status(400).json({
+      message: error.message,
     });
   }
 };
@@ -208,39 +136,31 @@ const updateUserProfile = async (req, res) => {
 // @route   POST /api/auth/logout
 // @access  Public
 const logoutUser = (req, res) => {
-  res.cookie('token', '', {
+  res.cookie('jwt', '', {
     httpOnly: true,
-    expires: new Date(0)
+    expires: new Date(0),
   });
-  
-  res.status(200).json({
-    success: true,
-    message: 'Logged out successfully'
-  });
+  res.status(200).json({ message: 'Logged out successfully' });
 };
 
 // Generate JWT and set it as an HTTP-only cookie
 const generateToken = (res, userId) => {
-  const token = jwt.sign(
-    { id: userId },
-    process.env.JWT_SECRET || 'your_jwt_secret',
-    { expiresIn: '30d' }
-  );
-
-  res.cookie('token', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+  const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
   });
 
-  return token;
+  res.cookie('jwt', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV !== 'development',
+    sameSite: 'strict',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  });
 };
 
 module.exports = {
   registerUser,
   authUser,
+  logoutUser,
   getUserProfile,
   updateUserProfile,
-  logoutUser
 };
