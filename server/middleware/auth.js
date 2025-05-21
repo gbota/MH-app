@@ -3,6 +3,9 @@ const User = require('../models/User');
 
 // Protect routes
 const protect = async (req, res, next) => {
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
   let token;
 
   if (
