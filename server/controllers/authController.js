@@ -146,7 +146,7 @@ const logoutUser = (req, res) => {
 // Generate JWT and set it as an HTTP-only cookie
 const generateToken = (res, userId) => {
   const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRE,
+    expiresIn: process.env.JWT_EXPIRE || '30d',
   });
 
   res.cookie('jwt', token, {
