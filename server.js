@@ -36,7 +36,9 @@ app.use((req, res, next) => {
 
 // CORS middleware
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : 'http://localhost:3000',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept'],
@@ -57,9 +59,13 @@ app.use((req, res, next) => {
 });
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://admin:admin123@localhost:27017/musichub?authSource=admin';
-console.log('Connecting to MongoDB at:', MONGODB_URI.replace(/:([^:]*?)@/, ':***@'));
-console.log('MONGODB_URI at runtime:', process.env.MONGODB_URI);
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+  console.error('MONGODB_URI environment variable is not set');
+  process.exit(1);
+}
+
+console.log('Connecting to MongoDB...');
 
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
@@ -67,13 +73,12 @@ mongoose.connect(MONGODB_URI, {
   serverSelectionTimeoutMS: 5000,
   socketTimeoutMS: 45000
 })
+.then(() => {
+  console.log('MongoDB connected successfully');
+})
 .catch(err => {
   console.error('MongoDB connection error:', err);
   process.exit(1);
-});
-
-mongoose.connection.on('connected', () => {
-  console.log('MongoDB connected successfully');
 });
 
 mongoose.connection.on('error', (err) => {

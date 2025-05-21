@@ -88,15 +88,14 @@ function App() {
                   <Route path="/performance-dashboard" element={<PerformanceDashboard />} />
                   <Route path="/needs-payment" element={<NeedsPayment />} />
                   <Route path="/settings" element={<Settings />} />
-                  <Route path="*" element={<NeedsPayment />} />
+                  <Route path="*" element={<Navigate to="/needs-payment" />} />
                 </Routes>
               </Box>
             </>
           ) : (
             <Routes>
               <Route path="/login" element={<Login onLogin={() => setIsLoggedIn(true)} />} />
-              <Route path="/needs-payment" element={<NeedsPayment />} />
-              <Route path="*" element={<Navigate to="/needs-payment" />} />
+              <Route path="*" element={<Navigate to="/login" />} />
             </Routes>
           )}
         </Box>

@@ -2,8 +2,8 @@ const axios = require('axios');
 
 const API_URL = 'http://localhost:5050/api/auth/login';
 const credentials = {
-  email: 'admin@example.com',
-  password: 'admin123',
+  email: 'musichub.cluj@gmail.com',
+  password: 'Trans1lvan1a',
 };
 
 (async () => {
