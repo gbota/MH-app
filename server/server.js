@@ -23,9 +23,11 @@ app.use(express.json());
 
 const reportsRouter = require(path.join(__dirname, 'routes', 'reports'));
 const performanceRouter = require(path.join(__dirname, 'routes', 'performance'));
+const authRouter = require(path.join(__dirname, 'routes', 'auth'));
 
 app.use('/api/reports', reportsRouter);
 app.use('/api/performance', performanceRouter);
+app.use('/api/auth', authRouter);
 
 const PORT = process.env.PORT || 5050;
 const server = app.listen(PORT, () => {
@@ -42,4 +44,10 @@ process.on('unhandledRejection', (err) => {
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
   process.exit(1);
+});
+
+// Add global error handler
+app.use((err, req, res, next) => {
+  console.error('Global error handler:', err.stack || err);
+  res.status(500).json({ message: err.message || 'Internal Server Error' });
 }); 
