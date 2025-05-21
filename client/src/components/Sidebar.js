@@ -6,6 +6,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import PaymentIcon from '@mui/icons-material/Payment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Link, useLocation } from 'react-router-dom';
+import Button from '@mui/material/Button';
 
 const menuItems = [
   {
@@ -32,7 +33,7 @@ const menuItems = [
 
 const drawerWidth = 240;
 
-const Sidebar = () => {
+const Sidebar = ({ onLogout }) => {
   const location = useLocation();
   const theme = useTheme();
   return (

@@ -1,23 +1,29 @@
 const express = require('express');
 const router = express.Router();
-const { savePerformanceData, loadPerformanceData, isDataStale } = require('../utils/performanceData');
+const path = require('path');
+const { savePerformanceData, loadPerformanceData, isDataStale } = require(path.join(__dirname, '..', 'utils', 'performanceData'));
 
 // Get cached performance data for a year
 router.get('/cached/:year', async (req, res) => {
   try {
     const year = parseInt(req.params.year);
     if (isNaN(year)) {
+      console.log('Invalid year param:', req.params.year);
       return res.status(400).json({ message: 'Invalid year' });
     }
 
     const data = await loadPerformanceData(year);
+    console.log(`[DEBUG] loadPerformanceData(${year}):`, data ? 'FOUND' : 'NOT FOUND');
     if (!data) {
+      console.log(`[DEBUG] No cached data found for year ${year}`);
       return res.status(404).json({ message: 'No cached data found' });
     }
 
     // Check if data is stale
     const stale = await isDataStale(year);
+    console.log(`[DEBUG] isDataStale(${year}):`, stale);
     if (stale) {
+      console.log(`[DEBUG] Cached data for year ${year} is stale`);
       return res.status(404).json({ message: 'Cached data is stale' });
     }
 

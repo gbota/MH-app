@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+.env
+.vscode
+README.md
+client/node_modules
+client/build
+client/.env
+client/npm-debug.log

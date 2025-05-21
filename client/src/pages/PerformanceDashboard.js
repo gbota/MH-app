@@ -4,6 +4,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import { Refresh as RefreshIcon } from '@mui/icons-material';
 import axios from 'axios';
 import { months } from '../utils/months';
+import config from '../config'; // Import the config
 
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear();
@@ -37,7 +38,7 @@ const PerformanceDashboard = () => {
       const allYearData = await Promise.all(selectedYears.map(async (year) => {
         // Check if we need to fetch fresh data
         if (!forceRefresh) {
-          const cachedData = await axios.get(`http://localhost:5050/api/performance/cached/${year}`);
+          const cachedData = await axios.get(`${config.apiUrl}/performance/cached/${year}`);
           if (cachedData.data) {
             return cachedData.data;
           }
@@ -45,10 +46,10 @@ const PerformanceDashboard = () => {
         
         // If no cached data or force refresh, fetch new data
         const [schoolRes, rehearsalRes] = await Promise.all([
-          axios.get('http://localhost:5050/api/reports/school', {
+          axios.get(`${config.apiUrl}/reports/school`, {
             params: { month: monthNumbers.join(','), year },
           }),
-          axios.get('http://localhost:5050/api/reports/rehearsals', {
+          axios.get(`${config.apiUrl}/reports/rehearsals`, {
             params: { month: monthNumbers.join(','), year },
           }),
         ]);

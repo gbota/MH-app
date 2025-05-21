@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const calendarService = require('../services/calendarService');
-const { months } = require('../utils/months');
-const fs = require('fs');
 const path = require('path');
-const EXCLUDE_WORDS_PATH = path.join(__dirname, '../data/rehearsal_exclude_words.json');
+const calendarService = require(path.join(__dirname, '..', 'services', 'calendarService'));
+const { months } = require(path.join(__dirname, '..', 'utils', 'months'));
+const fs = require('fs');
+const EXCLUDE_WORDS_PATH = path.join(__dirname, '..', 'data', 'rehearsal_exclude_words.json');
 
 // Helper to parse event summary
 function parseEventSummary(summary) {
@@ -60,13 +60,11 @@ router.post('/rehearsals/exclude-words', (req, res) => {
 // /api/reports/school?month=5&year=2024
 router.get('/school', async (req, res) => {
   try {
-    console.log('\n=== SCHOOL REPORT DEBUG ===');
     let { month, year } = req.query;
     if (!month || !year) return res.status(400).json({ message: 'Month and year are required.' });
     // Support multiple months (comma-separated or array)
     let monthsArr = Array.isArray(month) ? month : String(month).split(',').map(m => Number(m));
     const yearNum = Number(year);
-    console.log(`Processing school report for months: ${monthsArr}, year: ${yearNum}`);
     // Build date ranges for all selected months
     const ranges = monthsArr.map(m => {
       const monthNum = m - 1;
@@ -102,7 +100,6 @@ router.get('/school', async (req, res) => {
     for (const event of allEvents) {
       // Exclude rehearsals from school report
       if ((event.summary || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '').includes('sala repetitie')) {
-        console.log('Filtered rehearsal event:', event.summary);
         continue;
       }
       const parsed = parseEventSummary(event.summary || '');
@@ -144,7 +141,6 @@ router.get('/school', async (req, res) => {
       teachers: result,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: 'Error generating school report.' });
   }
 });
@@ -152,12 +148,11 @@ router.get('/school', async (req, res) => {
 // /api/reports/rehearsals?month=5&year=2024
 router.get('/rehearsals', async (req, res) => {
   try {
-    console.log('\n=== REHEARSALS REPORT DEBUG ===');
     let { month, year } = req.query;
     if (!month || !year) return res.status(400).json({ message: 'Month and year are required.' });
     let monthsArr = Array.isArray(month) ? month : String(month).split(',').map(m => Number(m));
     const yearNum = Number(year);
-    console.log(`Processing rehearsals report for months: ${monthsArr}, year: ${yearNum}`);
+    // Build date ranges for all selected months
     const ranges = monthsArr.map(m => {
       const monthNum = m - 1;
       return {
@@ -198,14 +193,10 @@ router.get('/rehearsals', async (req, res) => {
 
     // Read exclude words from file
     const excludeWords = readExcludeWords();
-    console.log('Exclude words:', excludeWords);
     if (excludeWords && excludeWords.length > 0) {
       rehearsalEvents = rehearsalEvents.filter(event => {
         const summary = event.summary || '';
         const isExcluded = excludeWords.some(word => summary.toLowerCase().includes(word.toLowerCase()));
-        if (isExcluded) {
-          console.log(`Excluded event: "${summary}"`);
-        }
         return !isExcluded;
       });
     }
@@ -223,7 +214,6 @@ router.get('/rehearsals', async (req, res) => {
         if (!bandName) bandName = summary || 'Unknown';
       }
       const duration = getEventDuration(event);
-      console.log(`Grouping event: "${event.summary}" under band: "${bandName}"`);
       if (!bandMap[bandName]) {
         bandMap[bandName] = { band: bandName, totalHours: 0, events: [] };
       }
@@ -236,11 +226,6 @@ router.get('/rehearsals', async (req, res) => {
       });
     }
 
-    console.log('\nFinal bands:');
-    Object.keys(bandMap).forEach(band => {
-      console.log(`- ${band}: ${bandMap[band].events.length} events, ${bandMap[band].totalHours} hours`);
-    });
-
     const bands = Object.values(bandMap);
 
     res.json({
@@ -250,7 +235,6 @@ router.get('/rehearsals', async (req, res) => {
       bands,
     });
   } catch (error) {
-    console.error(error);
     res.status(500).json({ message: 'Error generating rehearsals report.' });
   }
 });
