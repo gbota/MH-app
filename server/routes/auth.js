@@ -8,6 +8,7 @@ const {
   updateUserProfile,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
+const cors = require('cors');
 
 // Public routes
 router.post('/register', registerUser);
@@ -21,7 +22,7 @@ router
   .put(protect, updateUserProfile);
 
 // Handle CORS preflight for /login
-router.options('/login', (req, res) => {
+router.options('/login', cors(), (req, res) => {
   res.sendStatus(204);
 });
 
