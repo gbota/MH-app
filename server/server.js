@@ -2,14 +2,23 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const app = express();
+const allowedOrigins = [
+  'https://dashboard.music-hub.ro',
+  'https://music-school-frontend.onrender.com'
+];
+
 app.use(cors({
-  origin: [
-    'https://dashboard.music-hub.ro',
-    'https://music-school-frontend.onrender.com'
-  ],
-  credentials: true // if you use cookies
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
 }));
-app.options('*', cors());
+
 app.use(express.json());
 
 const reportsRouter = require(path.join(__dirname, 'routes', 'reports'));
