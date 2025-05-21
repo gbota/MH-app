@@ -25,9 +25,9 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
-      generateToken(res, user._id);
-
+      const token = generateToken(res, user._id);
       res.status(201).json({
+        token,
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -54,9 +54,9 @@ const authUser = async (req, res) => {
     const user = await User.findOne({ email }).select('+password');
 
     if (user && (await user.matchPassword(password))) {
-      generateToken(res, user._id);
-
+      const token = generateToken(res, user._id);
       res.json({
+        token,
         _id: user._id,
         name: user.name,
         email: user.email,
@@ -155,6 +155,7 @@ const generateToken = (res, userId) => {
     sameSite: 'strict',
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
+  return token;
 };
 
 module.exports = {

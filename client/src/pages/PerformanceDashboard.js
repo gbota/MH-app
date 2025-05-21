@@ -36,15 +36,35 @@ const PerformanceDashboard = () => {
       const monthNumbers = Array.from({ length: 12 }, (_, i) => i + 1);
       // Fetch data for all selected years
       const allYearData = await Promise.all(selectedYears.map(async (year) => {
-        // Check if we need to fetch fresh data
+        const localKey = `performance_dashboard_${year}`;
+        // 1. Try localStorage cache first
         if (!forceRefresh) {
-          const cachedData = await axios.get(`${config.apiUrl}/performance/cached/${year}`);
-          if (cachedData.data) {
-            return cachedData.data;
+          const localCache = localStorage.getItem(localKey);
+          if (localCache) {
+            try {
+              const parsed = JSON.parse(localCache);
+              // Check if cache is less than 24h old
+              if (parsed && parsed.timestamp && Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+                return parsed.data;
+              }
+            } catch {}
           }
         }
-        
-        // If no cached data or force refresh, fetch new data
+        // 2. Try API cache
+        if (!forceRefresh) {
+          try {
+            const cachedResponse = await axios.get(`${config.apiUrl}/performance/cached/${year}`);
+            if (cachedResponse.data && !cachedResponse.data.stale) {
+              // Save to localStorage
+              localStorage.setItem(localKey, JSON.stringify({ data: cachedResponse.data.data, timestamp: Date.now() }));
+              return cachedResponse.data.data;
+            }
+            // If data is stale, fall through to fetch fresh data
+          } catch (err) {
+            // If any error occurs with cached data, fall through to fetch fresh data
+          }
+        }
+        // 3. Fetch fresh data
         const [schoolRes, rehearsalRes] = await Promise.all([
           axios.get(`${config.apiUrl}/reports/school`, {
             params: { month: monthNumbers.join(','), year },
@@ -53,7 +73,6 @@ const PerformanceDashboard = () => {
             params: { month: monthNumbers.join(','), year },
           }),
         ]);
-
         // Aggregate school hours per month
         const schoolHoursByMonth = Array(12).fill(0);
         if (schoolRes.data && schoolRes.data.teachers) {
@@ -67,7 +86,6 @@ const PerformanceDashboard = () => {
             });
           });
         }
-
         // Aggregate rehearsal hours per month
         const rehearsalHoursByMonth = Array(12).fill(0);
         if (rehearsalRes.data && rehearsalRes.data.bands) {
@@ -79,31 +97,33 @@ const PerformanceDashboard = () => {
             });
           });
         }
-
         const yearData = {
           year,
           school: schoolHoursByMonth,
           rehearsals: rehearsalHoursByMonth,
         };
-
-        // Cache the new data
-        await axios.post(`${config.apiUrl}/performance/cache/${year}`, yearData);
-        
+        // Cache the new data in API and localStorage
+        try {
+          await axios.post(`${config.apiUrl}/performance/cache/${year}`, yearData);
+        } catch {}
+        localStorage.setItem(localKey, JSON.stringify({ data: yearData, timestamp: Date.now() }));
         return yearData;
       }));
-
       // Prepare data for recharts
       const data = months.map((m, idx) => {
         const entry = { month: m.slice(0, 3) };
         allYearData.forEach((yd) => {
-          entry[`school_${yd.year}`] = Number(yd.school[idx].toFixed(2));
-          entry[`rehearsals_${yd.year}`] = Number(yd.rehearsals[idx].toFixed(2));
+          if (yd) {
+            entry[`school_${yd.year}`] = Number(yd.school[idx].toFixed(2));
+            entry[`rehearsals_${yd.year}`] = Number(yd.rehearsals[idx].toFixed(2));
+          }
         });
         return entry;
       });
       setChartData(data);
     } catch (err) {
-      setError('Failed to fetch dashboard data.');
+      console.error('[DEBUG] Dashboard error:', err);
+      setError('Failed to fetch dashboard data. Please try again.');
     } finally {
       setLoading(false);
       setRefreshing(false);

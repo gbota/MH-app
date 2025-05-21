@@ -42,19 +42,25 @@ async function getEvents(month, year) {
 }
 
 async function listEvents(calendarId, start, end) {
+  let allEvents = [];
+  let pageToken = undefined;
   try {
-    const response = await calendar.events.list({
-      calendarId,
-      timeMin: start.toISOString(),
-      timeMax: end.toISOString(),
-      singleEvents: true,
-      orderBy: 'startTime',
-    });
-
-    return response.data.items;
+    do {
+      const response = await calendar.events.list({
+        calendarId,
+        timeMin: start.toISOString(),
+        timeMax: end.toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime',
+        pageToken,
+      });
+      allEvents = allEvents.concat(response.data.items);
+      pageToken = response.data.nextPageToken;
+    } while (pageToken);
+    return allEvents;
   } catch (error) {
     console.error(`Error fetching events for calendar ${calendarId}:`, error);
-    return []; // Return empty array instead of throwing to prevent report failure
+    return [];
   }
 }
 
