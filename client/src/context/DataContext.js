@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import config from '../config';
 
 const DataContext = createContext();
 
@@ -22,8 +23,8 @@ export const DataProvider = ({ children }) => {
     setCache(prev => ({ ...prev, [key]: { loading: true, error: null, data: null } }));
     try {
       let url = '';
-      if (type === 'school') url = 'http://localhost:5050/api/reports/school';
-      else if (type === 'rehearsals') url = 'http://localhost:5050/api/reports/rehearsals';
+      if (type === 'school') url = `${config.apiUrl}/reports/school`;
+      else if (type === 'rehearsals') url = `${config.apiUrl}/reports/rehearsals`;
       else throw new Error('Invalid report type');
       const res = await axios.get(url, { params: { month: months.join(','), year } });
       setCache(prev => ({ ...prev, [key]: { loading: false, error: null, data: res.data } }));
@@ -40,8 +41,8 @@ export const DataProvider = ({ children }) => {
     setCache(prev => ({ ...prev, [key]: { loading: true, error: null, data: null } }));
     try {
       let url = '';
-      if (type === 'school') url = 'http://localhost:5050/api/reports/school';
-      else if (type === 'rehearsals') url = 'http://localhost:5050/api/reports/rehearsals';
+      if (type === 'school') url = `${config.apiUrl}/reports/school`;
+      else if (type === 'rehearsals') url = `${config.apiUrl}/reports/rehearsals`;
       else throw new Error('Invalid report type');
       const res = await axios.get(url, { params: { month: months.join(','), year } });
       setCache(prev => ({ ...prev, [key]: { loading: false, error: null, data: res.data } }));

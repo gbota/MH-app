@@ -20,6 +20,7 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import axios from 'axios';
+import config from '../config';
 
 const CALENDAR_IDS = [
     "musichub.sala4@gmail.com",
@@ -51,7 +52,7 @@ const Calendar = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get(`/api/calendar/events/${selectedCalendar}`, {
+      const response = await axios.get(`${config.apiUrl}/calendar/events/${selectedCalendar}`, {
         params: {
           start: startDate.toISOString(),
           end: endDate.toISOString(),
@@ -65,7 +66,7 @@ const Calendar = () => {
 
   const handleCreateEvent = async () => {
     try {
-      await axios.post(`/api/calendar/events/${selectedCalendar}`, newEvent);
+      await axios.post(`${config.apiUrl}/calendar/events/${selectedCalendar}`, newEvent);
       setOpenDialog(false);
       fetchEvents();
     } catch (error) {

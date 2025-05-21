@@ -16,6 +16,7 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { rentalInstruments } from '../utils/rentalInstruments';
 import { useDataContext } from '../context/DataContext';
+import config from '../config';
 
 const currentDate = new Date();
 const currentMonth = currentDate.getMonth();
@@ -42,7 +43,7 @@ const RehearsalsReports = () => {
     // Load exclude words from backend
     const fetchExcludeWords = async () => {
       try {
-        const res = await axios.get('http://localhost:5050/api/reports/rehearsals/exclude-words');
+        const res = await axios.get(`${config.apiUrl}/reports/rehearsals/exclude-words`);
         setExcludeWords(res.data.excludeWords || []);
         setExcludeWordsLoaded(true);
       } catch (err) {
@@ -58,7 +59,7 @@ const RehearsalsReports = () => {
     if (!excludeWordsLoaded) return;
     const saveExcludeWords = async () => {
       try {
-        await axios.post('http://localhost:5050/api/reports/rehearsals/exclude-words', { excludeWords });
+        await axios.post(`${config.apiUrl}/reports/rehearsals/exclude-words`, { excludeWords });
       } catch (err) {
         // Optionally handle error
       }

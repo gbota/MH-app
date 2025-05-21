@@ -87,7 +87,7 @@ const PerformanceDashboard = () => {
         };
 
         // Cache the new data
-        await axios.post(`http://localhost:5050/api/performance/cache/${year}`, yearData);
+        await axios.post(`${config.apiUrl}/performance/cache/${year}`, yearData);
         
         return yearData;
       }));
