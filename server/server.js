@@ -19,6 +19,8 @@ app.use(cors({
   credentials: true
 }));
 
+app.options('*', cors());
+
 app.use(express.json());
 
 const reportsRouter = require(path.join(__dirname, 'routes', 'reports'));
