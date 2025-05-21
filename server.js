@@ -3,45 +3,16 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 
-// Enable debug logging for Mongoose
-mongoose.set('debug', true);
-
 const app = express();
 
-// Body parser middleware - must come before any route handlers
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-// Enhanced request logging middleware
-app.use((req, res, next) => {
-  console.log(`\n[${new Date().toISOString()}] ${req.method} ${req.originalUrl}`);
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
-  
-  // Log request body (except sensitive data)
-  if (req.body && Object.keys(req.body).length > 0) {
-    const logBody = { ...req.body };
-    if (logBody.password) logBody.password = '***';
-    console.log('Request Body:', JSON.stringify(logBody, null, 2));
-  } else {
-    console.log('No request body');
-  }
-  
-  // Log query parameters
-  if (Object.keys(req.query).length > 0) {
-    console.log('Query Params:', JSON.stringify(req.query, null, 2));
-  }
-  
-  next();
-});
-
-// CORS middleware
+// Middleware
 const allowedOrigins = [
   'http://localhost:3000',
   'https://music-school-frontend.onrender.com'
 ];
+
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
     if (allowedOrigins.includes(origin)) {
       return callback(null, true);
@@ -52,63 +23,23 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Content-Length', 'X-Requested-With', 'Accept'],
-  exposedHeaders: ['Content-Length', 'X-Foo', 'X-Bar']
+  exposedHeaders: ['Content-Length']
 }));
-
-// Handle preflight requests
-app.options('*', cors());
-
-// Add response time header
-app.use((req, res, next) => {
-  const start = Date.now();
-  res.on('finish', () => {
-    const duration = Date.now() - start;
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} - ${res.statusCode} (${duration}ms)`);
-  });
-  next();
-});
+app.use(express.json());
 
 // MongoDB Connection
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.error('MONGODB_URI environment variable is not set');
-  process.exit(1);
-}
-
-console.log('Connecting to MongoDB...');
-
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://admin:adminpassword@localhost:27017/music-school?authSource=admin';
 mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
-  serverSelectionTimeoutMS: 5000,
-  socketTimeoutMS: 45000
+  useUnifiedTopology: true
 })
-.then(() => {
-  console.log('MongoDB connected successfully');
-})
-.catch(err => {
-  console.error('MongoDB connection error:', err);
-  process.exit(1);
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
-});
-
-mongoose.connection.on('disconnected', () => {
-  console.log('MongoDB disconnected');
-});
-
-// Health check endpoint
-app.get('/api/health', (req, res) => {
-  res.status(200).json({ status: 'OK' });
-});
+.then(() => console.log('MongoDB connected'))
+.catch(err => console.log('MongoDB connection error:', err));
 
 // Routes
 app.use('/api/auth', require('./server/routes/auth'));
 app.use('/api/reports', require('./server/routes/reports'));
 app.use('/api/calendar', require('./server/routes/calendar'));
-app.use('/api/performance', require('./server/routes/performance'));
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
