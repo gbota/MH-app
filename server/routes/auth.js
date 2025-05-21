@@ -20,4 +20,9 @@ router
   .get(protect, getUserProfile)
   .put(protect, updateUserProfile);
 
+// Handle CORS preflight for /login
+router.options('/login', (req, res) => {
+  res.sendStatus(204);
+});
+
 module.exports = router;
