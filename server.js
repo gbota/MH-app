@@ -9,7 +9,7 @@ const app = express();
 // Middleware
 const allowedOrigins = [
   'https://dashboard.music-hub.ro',
-  'https://music-school-frontend.onrender.com'
+  'https://mh-app-ij6d.onrender.com'
 ];
 
 // CORS middleware - restrict to allowed origins
