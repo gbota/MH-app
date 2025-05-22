@@ -65,6 +65,13 @@ const PerformanceDashboard = () => {
           }
         }
         // 3. Fetch fresh data
+        // Only fetch up to the end of the current month for the current year
+        let monthNumbers;
+        if (year === currentYear) {
+          monthNumbers = Array.from({ length: currentDate.getMonth() + 1 }, (_, i) => i + 1);
+        } else {
+          monthNumbers = Array.from({ length: 12 }, (_, i) => i + 1);
+        }
         const [schoolRes, rehearsalRes] = await Promise.all([
           axios.get(`${config.apiUrl}/reports/school`, {
             params: { month: monthNumbers.join(','), year },
