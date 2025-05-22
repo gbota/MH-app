@@ -11,7 +11,14 @@ const allowedOrigins = [
   'https://music-school-frontend.onrender.com'
 ];
 
-// app.use(cors({ ... })); // Disabled to avoid duplicate CORS
+// CORS middleware - temporarily allow all origins for debugging
+app.use(cors({
+  origin: true,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // MongoDB Connection
