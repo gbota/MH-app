@@ -12,6 +12,11 @@ import NeedsPayment from './pages/NeedsPayment';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Button from '@mui/material/Button';
+import IconButton from '@mui/material/IconButton';
+import MenuIcon from '@mui/icons-material/Menu';
+import AppBar from '@mui/material/AppBar';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 
 const theme = createTheme({
@@ -26,6 +31,10 @@ const theme = createTheme({
     background: {
       default: '#121212',
       paper: '#1e1e1e',
+    },
+    text: {
+      primary: '#fff',
+      secondary: '#b0b0b0',
     },
   },
   typography: {
@@ -42,7 +51,16 @@ const theme = createTheme({
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: 16,
+          backgroundColor: '#1e1e1e',
+          color: '#fff',
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#1e1e1e',
+          color: '#fff',
         },
       },
     },
@@ -60,6 +78,14 @@ function App() {
     return false;
   });
 
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const handleDrawerToggle = () => {
+    setMobileOpen((prev) => !prev);
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -74,10 +100,27 @@ function App() {
         <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
           {isLoggedIn ? (
             <>
-              <Sidebar onLogout={handleLogout} />
+              <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
               <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-                <Toolbar />
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
+                <AppBar position="fixed" color="default" sx={{ display: { md: 'none' }, zIndex: theme.zIndex.drawer + 1 }}>
+                  <Toolbar>
+                    <IconButton
+                      color="inherit"
+                      aria-label="open drawer"
+                      edge="start"
+                      onClick={handleDrawerToggle}
+                      sx={{ mr: 2, display: { md: 'none' } }}
+                    >
+                      <MenuIcon />
+                    </IconButton>
+                    <Box sx={{ flexGrow: 1 }} />
+                    <Button variant="outlined" color="secondary" onClick={handleLogout}>
+                      Logout
+                    </Button>
+                  </Toolbar>
+                </AppBar>
+                <Toolbar sx={{ display: { xs: 'none', md: 'flex' } }} />
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2, display: { xs: 'none', md: 'flex' } }}>
                   <Button variant="outlined" color="secondary" onClick={handleLogout}>
                     Logout
                   </Button>

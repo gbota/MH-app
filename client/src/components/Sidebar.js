@@ -7,6 +7,7 @@ import PaymentIcon from '@mui/icons-material/Payment';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
+import { useMediaQuery } from '@mui/material';
 
 const menuItems = [
   {
@@ -33,24 +34,9 @@ const menuItems = [
 
 const drawerWidth = 240;
 
-const Sidebar = ({ onLogout }) => {
-  const location = useLocation();
-  const theme = useTheme();
+function SidebarContent({ location, theme }) {
   return (
-    <Drawer
-      variant="permanent"
-      sx={{
-        width: drawerWidth,
-        flexShrink: 0,
-        [`& .MuiDrawer-paper`]: {
-          width: drawerWidth,
-          boxSizing: 'border-box',
-          background: theme.palette.background.paper,
-          color: theme.palette.text.primary,
-          borderRight: 'none',
-        },
-      }}
-    >
+    <>
       <Toolbar />
       <Box sx={{ p: 2, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
         <Box sx={{ mb: 1 }}>
@@ -111,6 +97,56 @@ const Sidebar = ({ onLogout }) => {
           </ListItemButton>
         </List>
       </Box>
+    </>
+  );
+}
+
+const Sidebar = ({ mobileOpen, onMobileClose }) => {
+  const location = useLocation();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  if (isMobile) {
+    return (
+      <Drawer
+        variant="temporary"
+        open={mobileOpen}
+        onClose={onMobileClose}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: 'block', md: 'none' },
+          '& .MuiDrawer-paper': {
+            width: drawerWidth,
+            boxSizing: 'border-box',
+            background: theme.palette.background.paper,
+            color: theme.palette.text.primary,
+            borderRight: 'none',
+          },
+        }}
+      >
+        <SidebarContent location={location} theme={theme} />
+      </Drawer>
+    );
+  }
+
+  return (
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: drawerWidth,
+        flexShrink: 0,
+        display: { xs: 'none', md: 'block' },
+        '& .MuiDrawer-paper': {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          background: theme.palette.background.paper,
+          color: theme.palette.text.primary,
+          borderRight: 'none',
+        },
+      }}
+      open
+    >
+      <SidebarContent location={location} theme={theme} />
     </Drawer>
   );
 };
