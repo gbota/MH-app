@@ -5,3 +5,5 @@ const config = {
 };
 
 export default config;
+
+export const apiUrl = "https://mh-app-ij6d.onrender.com";
