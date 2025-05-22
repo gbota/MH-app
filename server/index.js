@@ -35,7 +35,7 @@ if (process.env.NODE_ENV !== 'test') {
 app.set('trust proxy', true);
 
 // Middleware
-app.use(cors());
+// app.use(cors()); // Disabled to avoid duplicate CORS
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
