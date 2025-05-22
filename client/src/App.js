@@ -97,11 +97,11 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default' }}>
+        <Box sx={{ display: 'flex', minHeight: '100vh', backgroundColor: 'background.default', maxWidth: '100vw', overflowX: 'hidden' }}>
           {isLoggedIn ? (
             <>
               <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
-              <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+              <Box component="main" sx={{ flexGrow: 1, p: 3, width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
                 <AppBar position="fixed" color="default" sx={{ display: { md: 'none' }, zIndex: theme.zIndex.drawer + 1 }}>
                   <Toolbar>
                     <IconButton
