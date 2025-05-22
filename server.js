@@ -7,13 +7,19 @@ const app = express();
 
 // Middleware
 const allowedOrigins = [
-  'http://localhost:3000',
+  'https://dashboard.music-hub.ro',
   'https://music-school-frontend.onrender.com'
 ];
 
-// CORS middleware - temporarily allow all origins for debugging
+// CORS middleware - restrict to allowed origins
 app.use(cors({
-  origin: true,
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
