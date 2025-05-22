@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Accordion, AccordionSummary, AccordionDetails, CircularProgress, Chip, Stack, Button, Divider } from '@mui/material';
+import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Accordion, AccordionSummary, AccordionDetails, CircularProgress, Chip, Stack, Button, Divider, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import WarningIcon from '@mui/icons-material/Warning';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -182,6 +182,11 @@ const NeedsPayment = () => {
   // Debug: Log final filtered data
   console.log('Final filtered data:', JSON.stringify(data, null, 2));
 
+  const handleRefresh = () => {
+    refreshSchool();
+    setSelectedDate(selectedDate.clone()); // Force useMemo recalculation
+  };
+
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto' }}>
       <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
@@ -189,23 +194,27 @@ const NeedsPayment = () => {
           Needs Payment?
         </Typography>
         <Divider sx={{ my: 2 }} />
-        <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
-          <DatePicker
-            label="Select Day"
-            value={selectedDate}
-            onChange={setSelectedDate}
-            slotProps={{ textField: { size: 'small', sx: { width: 160, fontSize: 14 } } }}
-          />
-          <Button
-            variant="outlined"
-            size="small"
-            startIcon={<RefreshIcon />}
-            onClick={refreshSchool}
-            sx={{ minWidth: 40, height: 40 }}
-          >
-            Refresh
-          </Button>
-        </Box>
+        <Grid container spacing={2} alignItems="center" sx={{ mb: 3 }}>
+          <Grid item>
+            <DatePicker
+              label="Select Day"
+              value={selectedDate}
+              onChange={setSelectedDate}
+              slotProps={{ textField: { size: 'small', sx: { width: 160, fontSize: 14 } } }}
+            />
+          </Grid>
+          <Grid item>
+            <Button
+              variant="contained"
+              onClick={handleRefresh}
+              disabled={loading}
+              sx={{ ml: 2 }}
+              startIcon={<RefreshIcon />}
+            >
+              Refresh
+            </Button>
+          </Grid>
+        </Grid>
         {loading && <CircularProgress />}
         {data.length === 0 && !loading && (
           <Typography color="text.secondary">No sessions for this day.</Typography>

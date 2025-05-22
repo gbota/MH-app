@@ -18,6 +18,8 @@ import AppBar from '@mui/material/AppBar';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 const theme = createTheme({
   palette: {
@@ -81,6 +83,7 @@ function App() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [showWakeupWarning, setShowWakeupWarning] = useState(false);
 
   const handleDrawerToggle = () => {
     setMobileOpen((prev) => !prev);
@@ -91,6 +94,19 @@ function App() {
     localStorage.removeItem('user');
     delete axios.defaults.headers.common['Authorization'];
     setIsLoggedIn(false);
+  };
+
+  // Helper to wrap API calls and show wakeup warning if slow
+  const fetchWithWakeupWarning = async (fetchFn) => {
+    let timeout;
+    try {
+      timeout = setTimeout(() => setShowWakeupWarning(true), 25000); // 25s
+      const result = await fetchFn();
+      return result;
+    } finally {
+      clearTimeout(timeout);
+      setShowWakeupWarning(false);
+    }
   };
 
   return (
@@ -134,6 +150,11 @@ function App() {
                   <Route path="*" element={<Navigate to="/needs-payment" />} />
                 </Routes>
               </Box>
+              <Snackbar open={showWakeupWarning} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+                <Alert severity="info" sx={{ width: '100%' }}>
+                  The server is waking up, please wait...
+                </Alert>
+              </Snackbar>
             </>
           ) : (
             <Routes>

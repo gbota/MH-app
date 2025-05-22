@@ -370,9 +370,18 @@ const RehearsalsReports = () => {
                 <IconButton
                   aria-label="Download PDF"
                   onClick={() => handleDownloadPDF(band)}
-                  sx={{ ml: 2 }}
+                  color="primary"
+                  size="large"
+                  sx={{
+                    ml: 2,
+                    color: 'primary.main',
+                    fontSize: { xs: 28, md: 24 },
+                    backgroundColor: { xs: 'background.paper', md: 'transparent' },
+                    borderRadius: 2,
+                    boxShadow: { xs: 1, md: 0 },
+                  }}
                 >
-                  <DownloadIcon />
+                  <DownloadIcon sx={{ fontSize: { xs: 28, md: 24 } }} />
                 </IconButton>
               </Box>
             ))}
