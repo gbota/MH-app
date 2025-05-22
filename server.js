@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
 
@@ -40,6 +41,14 @@ mongoose.connect(MONGODB_URI, {
 app.use('/api/auth', require('./server/routes/auth'));
 app.use('/api/reports', require('./server/routes/reports'));
 app.use('/api/calendar', require('./server/routes/calendar'));
+
+// Serve static files from the React app
+app.use(express.static(path.join(__dirname, 'client', 'build')));
+
+// Catch-all route to serve React's index.html for any non-API route
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'client', 'build', 'index.html'));
+});
 
 const PORT = process.env.PORT || 5050;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`)); 
