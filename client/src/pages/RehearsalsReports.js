@@ -68,10 +68,10 @@ const RehearsalsReports = () => {
   }, [excludeWords, excludeWordsLoaded]);
 
   useEffect(() => {
-    if (!monthSelectOpen && !report && !loading) {
+    if (!loading && !report) {
       getReport('rehearsals', year, month.map(m => m + 1));
     }
-  }, [month, year, monthSelectOpen, excludeWords]);
+  }, [year, month, loading, report]);
 
   const handleAddExcludeWord = () => {
     if (newExcludeWord.trim() && !excludeWords.includes(newExcludeWord.trim())) {

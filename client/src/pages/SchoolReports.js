@@ -35,10 +35,10 @@ const SchoolReports = () => {
   const { loading, error, data: report } = useReport('school', year, month.map(m => m + 1));
 
   useEffect(() => {
-    if (!monthSelectOpen && !report && !loading) {
+    if (!loading && !report) {
       getReport('school', year, month.map(m => m + 1));
     }
-  }, [month, year, monthSelectOpen]);
+  }, [year, month, loading, report]);
 
   // Replace the handleDownloadPDF function with this implementation
   const handleDownloadPDF = (teacher) => {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Box, Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Accordion, AccordionSummary, AccordionDetails, CircularProgress, Chip, Stack, Button, Divider, Grid } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -15,8 +15,14 @@ const NeedsPayment = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const year = selectedDate.year();
   const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
-  const { useReport, refreshReport } = useDataContext();
+  const { useReport, refreshReport, getReport } = useDataContext();
   const { loading, data: schoolData } = useReport('school', year, months);
+
+  useEffect(() => {
+    if (!loading && !schoolData) {
+      getReport('school', year, months);
+    }
+  }, [year, months, loading, schoolData]);
 
   // Debug: Log raw school data
   console.log('Raw school data:', JSON.stringify(schoolData, null, 2));
