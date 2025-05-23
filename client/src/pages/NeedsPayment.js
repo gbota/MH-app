@@ -15,7 +15,8 @@ const NeedsPayment = () => {
   const [selectedDate, setSelectedDate] = useState(dayjs());
   const year = selectedDate.year();
   const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), []);
-  const { loading, data: schoolData, refresh: refreshSchool } = useDataContext().useReport('school', year, months);
+  const { useReport, refreshReport } = useDataContext();
+  const { loading, data: schoolData } = useReport('school', year, months);
 
   // Debug: Log raw school data
   console.log('Raw school data:', JSON.stringify(schoolData, null, 2));
@@ -183,7 +184,7 @@ const NeedsPayment = () => {
   console.log('Final filtered data:', JSON.stringify(data, null, 2));
 
   const handleRefresh = () => {
-    refreshSchool();
+    refreshReport('school', year, months);
     setSelectedDate(selectedDate.clone()); // Force useMemo recalculation
   };
 
