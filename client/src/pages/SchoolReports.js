@@ -320,31 +320,11 @@ const SchoolReports = () => {
               <Box key={teacher.teacher} sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                 <Box sx={{ flexGrow: 1 }}>
                   <Accordion sx={{ background: 'rgba(255,255,255,0.01)' }}>
-                    <AccordionSummary 
-                      expandIcon={<ExpandMoreIcon />}
-                      sx={{
-                        '& .MuiAccordionSummary-content': {
-                          mr: { xs: 4, md: 0 }, // Add margin to prevent overlap with chevron on mobile
-                        }
-                      }}
-                    >
-                      <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
                         {getRankIcon(tIdx)}
-                        <Typography variant="h6" color="primary" sx={{ 
-                          display: 'flex', 
-                          alignItems: 'center',
-                          flexWrap: { xs: 'wrap', md: 'nowrap' },
-                          gap: 1
-                        }}>
-                          {teacher.teacher}
-                          <span style={{ 
-                            color: '#bbb', 
-                            fontWeight: 400, 
-                            fontSize: { xs: 14, md: 18 },
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {teacher.totalHours.toFixed(2)}h
-                          </span>
+                        <Typography variant="h6" color="primary">
+                          {teacher.teacher} <span style={{ color: '#bbb', fontWeight: 400, fontSize: 18 }}>{teacher.totalHours.toFixed(2)}h</span>
                         </Typography>
                       </Box>
                     </AccordionSummary>
@@ -397,20 +377,9 @@ const SchoolReports = () => {
                   onClick={() => handleDownloadPDF(teacher)}
                   color="primary"
                   size="large"
-                  sx={{
-                    ml: 2,
-                    color: 'primary.main',
-                    fontSize: { xs: 28, md: 24 },
-                    backgroundColor: { xs: 'background.paper', md: 'transparent' },
-                    borderRadius: 2,
-                    boxShadow: { xs: 1, md: 0 },
-                    position: { xs: 'absolute', md: 'static' },
-                    right: { xs: 16, md: 'auto' },
-                    top: { xs: 16, md: 'auto' },
-                    zIndex: 1
-                  }}
+                  sx={{ ml: 2 }}
                 >
-                  <DownloadIcon sx={{ fontSize: { xs: 28, md: 24 } }} />
+                  <DownloadIcon />
                 </IconButton>
               </Box>
             ))}
