@@ -185,6 +185,54 @@ const RehearsalsReports = () => {
     refreshReport('rehearsals', year, month.map(m => m + 1));
   };
 
+  const handleDownloadAllPDF = () => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yOffset = 20;
+    
+    // Add title
+    doc.setFontSize(20);
+    doc.text('All Bands - Rehearsal Report', pageWidth / 2, yOffset, { align: 'center' });
+    yOffset += 10;
+    
+    // Add period
+    doc.setFontSize(12);
+    const periodText = `${month.map(m => months[m]).join(', ')} ${year}`;
+    doc.text(periodText, pageWidth / 2, yOffset, { align: 'center' });
+    yOffset += 10;
+    
+    // Add total hours
+    doc.setFontSize(14);
+    doc.text(`Total Hours: ${totalHours.toFixed(2)}`, pageWidth / 2, yOffset, { align: 'center' });
+    yOffset += 10;
+    
+    // Add bands table
+    const bandData = bands.map(band => [
+      band.band,
+      band.totalHours.toFixed(2),
+      band.events.length.toString()
+    ]);
+    
+    doc.autoTable({
+      startY: yOffset,
+      head: [['Band', 'Total Hours', 'Number of Sessions']],
+      body: bandData,
+      theme: 'grid',
+      headStyles: { fillColor: [41, 128, 185] },
+      styles: { fontSize: 10 },
+      columnStyles: {
+        0: { cellWidth: 100 },
+        1: { cellWidth: 45 },
+        2: { cellWidth: 45 }
+      }
+    });
+    
+    // Save the PDF with new filename format
+    const shortMonths = month.map(m => months[m].substring(0, 3));
+    const fileName = `${year}-${shortMonths.join('_')}_Rehearsals report.pdf`;
+    doc.save(fileName);
+  };
+
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto' }}>
       <Paper elevation={3} sx={{ p: 4, mb: 3 }}>
@@ -234,6 +282,18 @@ const RehearsalsReports = () => {
           <Grid item>
             <Button variant="contained" onClick={handleRefresh} disabled={loading} sx={{ ml: 2 }}>
               Refresh
+            </Button>
+          </Grid>
+          <Grid item>
+            <Button 
+              variant="contained" 
+              color="secondary" 
+              onClick={handleDownloadAllPDF} 
+              disabled={loading || !bands.length}
+              startIcon={<DownloadIcon />}
+              sx={{ ml: 2 }}
+            >
+              Export All Bands
             </Button>
           </Grid>
         </Grid>
